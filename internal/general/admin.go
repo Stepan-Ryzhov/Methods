@@ -16,6 +16,145 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
+	content.RemoveAll()
+	AdminSidebar(user, app, window, content)
+	z := canvas.NewText("Редактировать товар:", color.Black)
+	z.TextSize = 32
+	z.Move(fyne.NewPos(300, 20))
+	content.Add(z)
+
+	products, err := rep.GetProducts()
+	if err != nil {
+		dialog.NewError(err, window).Show()
+	} else {
+		getSize := func() (int, int) {
+			return len(products) + 1, 5
+		}
+
+		createCell := func() fyne.CanvasObject {
+			return widget.NewLabel("")
+		}
+
+		updateCell := func(cellID widget.TableCellID, obj fyne.CanvasObject) {
+			label := obj.(*widget.Label)
+
+			if cellID.Row == 0 {
+				headers := []string{"ID", "Название товара", "Цена", "Кол-во", "Категория"}
+				label.SetText(headers[cellID.Col])
+				label.TextStyle = fyne.TextStyle{Bold: true}
+			} else {
+				emp := products[cellID.Row-1]
+
+				switch cellID.Col {
+				case 0:
+					label.SetText(fmt.Sprintf("%d", emp.ID))
+				case 1:
+					label.SetText(emp.Name)
+				case 2:
+					label.SetText(fmt.Sprintf("%.2f", emp.Price))
+				case 3:
+					label.SetText(fmt.Sprintf("%d", emp.Stock))
+				case 4:
+					label.SetText(emp.Category.Name)
+				}
+			}
+		}
+
+		table := widget.NewTable(getSize, createCell, updateCell)
+		table.SetColumnWidth(0, 60)
+		table.SetColumnWidth(1, 230)
+		table.SetColumnWidth(2, 100)
+		table.SetColumnWidth(3, 60)
+		table.SetColumnWidth(4, 230)
+		table.Resize(fyne.NewSize(700, 250))
+		table.Move(fyne.NewPos(370, 100))
+		content.Add(table)
+	}
+
+	noteLabel := widget.NewLabel("Обязательно введите ID товара и название категории, остальные поля заполните только если хотите изменить их")
+	noteLabel.Resize(fyne.NewSize(700, 20))
+	noteLabel.Move(fyne.NewPos(350, 50))
+	content.Add(noteLabel)
+
+	IdEntry := widget.NewEntry()
+	IdEntry.SetPlaceHolder("Введите ID товара")
+	IdEntry.Resize(fyne.NewSize(300, 100))
+
+	nameEntry := widget.NewEntry()
+	nameEntry.SetPlaceHolder("Введите название товара")
+	nameEntry.Resize(fyne.NewSize(300, 100))
+
+	descriptionEntry := widget.NewEntry()
+	descriptionEntry.SetPlaceHolder("Введите описание товара")
+	descriptionEntry.Resize(fyne.NewSize(300, 100))
+
+	priceEntry := widget.NewEntry()
+	priceEntry.SetPlaceHolder("Введите цену товара")
+	priceEntry.Resize(fyne.NewSize(300, 100))
+
+	categoryNameEntry := widget.NewEntry()
+	categoryNameEntry.SetPlaceHolder("Введите название категории")
+	categoryNameEntry.Resize(fyne.NewSize(300, 100))
+
+	stockEntry := widget.NewEntry()
+	stockEntry.SetPlaceHolder("Введите количество товара")
+	stockEntry.Resize(fyne.NewSize(300, 100))
+
+	otstup := widget.NewLabel(" ")
+
+	okBtn := widget.NewButton("Обновить", func() {
+		val, err := strconv.ParseUint(IdEntry.Text, 10, 64)
+		if err != nil {
+			dialog.NewError(errors.New("Некорректный ID"), window).Show()
+			return
+		}
+
+		category, err := rep.FindCategory(categoryNameEntry.Text)
+		if err != nil {
+			dialog.NewError(err, window).Show()
+			return
+		}
+
+		floatPrice, err := strconv.ParseFloat(priceEntry.Text, 64)
+		if err != nil {
+			dialog.NewError(errors.New("Некорректная цена"), window).Show()
+			return
+		}
+
+		intStock, err := strconv.Atoi(stockEntry.Text)
+		if err != nil {
+			dialog.NewError(errors.New("Некорректное количество"), window).Show()
+			return
+		}
+
+		newProduct := &models.Product{
+			ID:          uint(val),
+			Name:        nameEntry.Text,
+			Description: descriptionEntry.Text,
+			Price:       floatPrice,
+			CategoryID:  category.ID,
+			Stock:       intStock,
+		}
+
+		err = rep.UpdateProduct(newProduct)
+		if err != nil {
+			dialog.NewError(err, window).Show()
+		} else {
+			dialog.NewInformation("Успех", "Товар "+newProduct.Name+" успешно обновлен!", window).Show()
+			UpdateProduct(user, app, window, content)
+		}
+	})
+
+	okBtn.Resize(fyne.NewSize(200, 50))
+
+	Categoryform := container.NewVBox(IdEntry, nameEntry, descriptionEntry, priceEntry, categoryNameEntry, stockEntry, otstup, okBtn)
+	Categoryform.Resize(fyne.NewSize(300, 300))
+	Categoryform.Move(fyne.NewPos(500, 400))
+
+	content.Add(Categoryform)
+}
+
 func CreateStoreMan(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
 	content.RemoveAll()
 	AdminSidebar(user, app, window, content)
@@ -219,7 +358,6 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 	priceEntry := widget.NewEntry()
 	priceEntry.SetPlaceHolder("Введите цену товара")
 	priceEntry.Resize(fyne.NewSize(300, 100))
-	priceEntry.SetText("0")
 
 	categoryNameEntry := widget.NewEntry()
 	categoryNameEntry.SetPlaceHolder("Введите название категории")
@@ -228,7 +366,6 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 	stockEntry := widget.NewEntry()
 	stockEntry.SetPlaceHolder("Введите количество товара")
 	stockEntry.Resize(fyne.NewSize(300, 100))
-	stockEntry.SetText("0")
 
 	otstup := widget.NewLabel(" ")
 
@@ -432,18 +569,23 @@ func AdminSidebar(user *models.User, app fyne.App, window fyne.Window, content *
 
 	newCatogoryBtn := widget.NewButton("Новая категория", func() { CreateCategory(user, app, window, content) })
 	newCatogoryBtn.Resize(fyne.NewSize(200, 50))
-	newCatogoryBtn.Move(fyne.NewPos(50, 120))
+	newCatogoryBtn.Move(fyne.NewPos(50, 100))
 	content.Add(newCatogoryBtn)
 
 	deleteCatogoryBtn := widget.NewButton("Удалить категорию", func() { DeleteCategory(user, app, window, content) })
 	deleteCatogoryBtn.Resize(fyne.NewSize(200, 50))
-	deleteCatogoryBtn.Move(fyne.NewPos(50, 220))
+	deleteCatogoryBtn.Move(fyne.NewPos(50, 180))
 	content.Add(deleteCatogoryBtn)
 
 	newProductBtn := widget.NewButton("Новый продукт", func() { CreateProduct(user, app, window, content) })
 	newProductBtn.Resize(fyne.NewSize(200, 50))
-	newProductBtn.Move(fyne.NewPos(50, 320))
+	newProductBtn.Move(fyne.NewPos(50, 260))
 	content.Add(newProductBtn)
+
+	updateProductBtn := widget.NewButton("Изменить продукт", func() { UpdateProduct(user, app, window, content) })
+	updateProductBtn.Resize(fyne.NewSize(200, 50))
+	updateProductBtn.Move(fyne.NewPos(50, 340))
+	content.Add(updateProductBtn)
 
 	deleteProductBtn := widget.NewButton("Удалить продукт", func() { DeleteProduct(user, app, window, content) })
 	deleteProductBtn.Resize(fyne.NewSize(200, 50))
@@ -452,6 +594,6 @@ func AdminSidebar(user *models.User, app fyne.App, window fyne.Window, content *
 
 	createStoreBth := widget.NewButton("Новый кладовщик", func() { CreateStoreMan(user, app, window, content) })
 	createStoreBth.Resize(fyne.NewSize(200, 50))
-	createStoreBth.Move(fyne.NewPos(50, 520))
+	createStoreBth.Move(fyne.NewPos(50, 500))
 	content.Add(createStoreBth)
 }

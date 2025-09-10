@@ -233,3 +233,36 @@ func CreateStoreMan(req *models.RegisterRequest) error {
 		return usedEmail
 	}
 }
+
+func UpdateProduct(req *models.Product) error {
+	existing := &models.Product{}
+	if err := db.GetDB().Where("id = ?", req.ID).First(&existing).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("Товар с таким ID не найден")
+		}
+		return err
+	}
+
+	if req.Name != "" {
+		existing.Name = req.Name
+	}
+	if req.Description != "" {
+		existing.Description = req.Description
+	}
+	if req.CategoryID != 0 {
+		existing.CategoryID = req.CategoryID
+	}
+	if req.Price != 0 {
+		existing.Price = req.Price
+	}
+	if req.Stock != 0 {
+		existing.Stock = req.Stock
+	}
+
+	result := db.GetDB().Model(existing).Updates(existing)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
