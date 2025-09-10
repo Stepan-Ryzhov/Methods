@@ -145,13 +145,23 @@ func CreateCategory(name string) (*models.Category, error) {
 }
 
 func DeleteCategory(name string) error {
-	result := db.GetDB().Where("name = ?", name).Delete(&models.Category{})
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+	var category models.Category
+	if err := db.GetDB().Where("name = ?", name).First(&category).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errorDelete
-		} else {
-			return result.Error
 		}
+		return err
+	}
+
+	var productCount int64
+	db.GetDB().Model(&models.Product{}).Where("category_id = ?", category.ID).Count(&productCount)
+	if productCount > 0 {
+		return errors.New("Невозможно удалить категорию: к ней привязаны товары")
+	}
+
+	result := db.GetDB().Delete(&category)
+	if result.Error != nil {
+		return result.Error
 	}
 	return nil
 }
