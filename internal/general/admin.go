@@ -137,9 +137,9 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 	nameEntry.SetPlaceHolder("Введите название товара")
 	nameEntry.Resize(fyne.NewSize(300, 100))
 
-	descriptionEntry := widget.NewEntry()
-	descriptionEntry.SetPlaceHolder("Введите описание товара")
-	descriptionEntry.Resize(fyne.NewSize(300, 100))
+	descriptionEntry := widget.NewMultiLineEntry()
+	descriptionEntry.SetPlaceHolder("Введите описание товара не выходя\nза границы поля по ширине\nНе более 12 строчек")
+	descriptionEntry.Resize(fyne.NewSize(300, 300))
 
 	priceEntry := widget.NewEntry()
 	priceEntry.SetPlaceHolder("Введите цену товара")
@@ -343,7 +343,6 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 		table.SetColumnWidth(2, 100)
 		table.SetColumnWidth(3, 60)
 		table.SetColumnWidth(4, 230)
-		table.SetRowHeight(2, 200)
 		table.Resize(fyne.NewSize(700, 250))
 		table.Move(fyne.NewPos(370, 100))
 		content.Add(table)
@@ -353,9 +352,9 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 	nameEntry.SetPlaceHolder("Введите название товара")
 	nameEntry.Resize(fyne.NewSize(300, 100))
 
-	descriptionEntry := widget.NewEntry()
-	descriptionEntry.SetPlaceHolder("Введите описание товара")
-	descriptionEntry.Resize(fyne.NewSize(300, 100))
+	descriptionEntry := widget.NewMultiLineEntry()
+	descriptionEntry.SetPlaceHolder("Введите описание товара не выходя\nза границы поля по ширине\nНе более 12 строчек")
+	descriptionEntry.Resize(fyne.NewSize(300, 500))
 
 	priceEntry := widget.NewEntry()
 	priceEntry.SetPlaceHolder("Введите цену товара")
@@ -409,7 +408,7 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 	okBtn.Resize(fyne.NewSize(200, 50))
 
 	Categoryform := container.NewVBox(nameEntry, descriptionEntry, priceEntry, categoryNameEntry, stockEntry, otstup, okBtn)
-	Categoryform.Resize(fyne.NewSize(300, 300))
+	Categoryform.Resize(fyne.NewSize(300, 800))
 	Categoryform.Move(fyne.NewPos(500, 400))
 
 	content.Add(Categoryform)

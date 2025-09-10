@@ -24,7 +24,7 @@ var (
 	errorPassword    error = errors.New("Неверный пароль")
 	errorCategory    error = errors.New("Категория с таким именем уже существует")
 	errorCategory2   error = errors.New("Категория с таким именем не существует")
-	emptyName        error = errors.New("Имя не может быть пустым")
+	emptyName        error = errors.New("Поле не может быть пустым")
 	errorDelete      error = errors.New("Такой элемент не найден")
 	errorProduct     error = errors.New("Товар с таким именем уже существует")
 )
