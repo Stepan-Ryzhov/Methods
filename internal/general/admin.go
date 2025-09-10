@@ -167,17 +167,21 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 			dialog.NewError(err, window).Show()
 			return
 		}
-
-		floatPrice, err := strconv.ParseFloat(priceEntry.Text, 64)
-		if err != nil {
-			dialog.NewError(errors.New("Некорректная цена"), window).Show()
-			return
+		var floatPrice float64
+		if priceEntry.Text != "" {
+			floatPrice, err = strconv.ParseFloat(priceEntry.Text, 64)
+			if err != nil {
+				dialog.NewError(errors.New("Некорректная цена"), window).Show()
+				return
+			}
 		}
-
-		intStock, err := strconv.Atoi(stockEntry.Text)
-		if err != nil {
-			dialog.NewError(errors.New("Некорректное количество"), window).Show()
-			return
+		var intStock int
+		if stockEntry.Text != "" {
+			intStock, err = strconv.Atoi(stockEntry.Text)
+			if err != nil {
+				dialog.NewError(errors.New("Некорректное количество"), window).Show()
+				return
+			}
 		}
 
 		newProduct := &models.Product{
