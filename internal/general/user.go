@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 
-	//"fyne.io/fyne/v2/container"
+	// "fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
@@ -49,12 +49,17 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 	z.Move(fyne.NewPos(300, 20))
 	content.Add(z)
 
+	headerLabel := widget.NewLabel("Название товара\t\t\t        Цена\t\t    Описание\t\t\t\t\t\tКатегория")
+	headerLabel.Resize(fyne.NewSize(850, 50))
+	headerLabel.Move(fyne.NewPos(300, 100))
+	content.Add(headerLabel)
+
 	products, err := rep.GetProductsUser()
 	if err != nil {
 		dialog.NewError(err, window).Show()
 	} else {
 		getSize := func() (int, int) {
-			return len(products) + 1, 4
+			return len(products), 4
 		}
 
 		createCell := func() fyne.CanvasObject {
@@ -63,24 +68,18 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 
 		updateCell := func(cellID widget.TableCellID, obj fyne.CanvasObject) {
 			label := obj.(*widget.Label)
+			emp := products[cellID.Row]
 
-			if cellID.Row == 0 {
-				headers := []string{"Название товара", "Цена", "Описание", "Категория"}
-				label.SetText(headers[cellID.Col])
-				label.TextStyle = fyne.TextStyle{Bold: true}
-			} else {
-				emp := products[cellID.Row-1]
-
-				switch cellID.Col {
-				case 0:
-					label.SetText(emp.Name)
-				case 1:
-					label.SetText(fmt.Sprintf("%.2f", emp.Price))
-				case 2:
-					label.SetText(emp.Description)
-				case 3:
-					label.SetText(emp.Category.Name)
-				}
+			switch cellID.Col {
+			case 0:
+				label.SetText(emp.Name)
+			case 1:
+				label.SetText(fmt.Sprintf("%.2f", emp.Price))
+			case 2:
+				label.SetText(emp.Description)
+				label.Wrapping = fyne.TextWrapWord
+			case 3:
+				label.SetText(emp.Category.Name)
 			}
 		}
 
@@ -89,8 +88,12 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 		table.SetColumnWidth(1, 100)
 		table.SetColumnWidth(2, 300)
 		table.SetColumnWidth(3, 190)
-		table.Resize(fyne.NewSize(850, 250))
-		table.Move(fyne.NewPos(300, 100))
+		table.SetRowHeight(0, 250)
+		table.SetRowHeight(1, 250)
+		table.SetRowHeight(2, 250)
+		table.SetRowHeight(3, 250)
+		table.Resize(fyne.NewSize(850, 400))
+		table.Move(fyne.NewPos(300, 150))
 		content.Add(table)
 
 		addToCartBtn := widget.NewButton("Добавить в корзину", func() {
@@ -99,16 +102,16 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 				return
 			}
 
-			selectedProduct := products[selectedProductIndex]
+			selectedProduct := products[selectedProductIndex].ID
 			fmt.Println(selectedProduct)
-			dialog.NewInformation("Успех", fmt.Sprintf("Товар %s добавлен в корзину", selectedProduct.Name), window).Show()
+			dialog.NewInformation("Успех", fmt.Sprintf("Товар %s добавлен в корзину", products[selectedProductIndex].Name), window).Show()
 		})
 		addToCartBtn.Resize(fyne.NewSize(200, 50))
 		addToCartBtn.Move(fyne.NewPos(600, 700))
 		content.Add(addToCartBtn)
 
 		table.OnSelected = func(id widget.TableCellID) {
-			selectedProductIndex = id.Row - 1
+			selectedProductIndex = id.Row
 		}
 	}
 }

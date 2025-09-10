@@ -343,6 +343,7 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 		table.SetColumnWidth(2, 100)
 		table.SetColumnWidth(3, 60)
 		table.SetColumnWidth(4, 230)
+		table.SetRowHeight(2, 200)
 		table.Resize(fyne.NewSize(700, 250))
 		table.Move(fyne.NewPos(370, 100))
 		content.Add(table)
