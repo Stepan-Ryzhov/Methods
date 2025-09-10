@@ -73,8 +73,9 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 	}
 
 	noteLabel := widget.NewLabel("Обязательно введите ID товара и название категории, остальные поля заполните только если хотите изменить их")
+	noteLabel.TextStyle.Bold = true
 	noteLabel.Resize(fyne.NewSize(700, 20))
-	noteLabel.Move(fyne.NewPos(350, 50))
+	noteLabel.Move(fyne.NewPos(295, 60))
 	content.Add(noteLabel)
 
 	IdEntry := widget.NewEntry()
