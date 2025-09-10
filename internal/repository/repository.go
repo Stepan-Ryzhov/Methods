@@ -195,3 +195,41 @@ func DeleteProduct(name string) error {
 	}
 	return nil
 }
+
+func CreateStoreMan(req *models.RegisterRequest) error {
+	if req.FirstName == "" || req.LastName == "" || req.Email == "" || req.Password == "" {
+		return empty
+	}
+	if strings.Contains(req.Email, "@") == false {
+		return nonValidEmail
+	}
+	if len(req.Password) < 6 {
+		return nonValidPassword
+	}
+	var exUser models.User
+	result := db.GetDB().Where("email = ?", req.Email).First(&exUser)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+			user := models.User{
+				FirstName: req.FirstName,
+				LastName:  req.LastName,
+				Email:     req.Email,
+				Token:     string(hashedPassword),
+				Role:      "store",
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			}
+			result := db.GetDB().Create(&user)
+			if result.Error != nil {
+				log.Printf("Ошибка создания пользователя в БД: %v", result.Error)
+				return result.Error
+			}
+
+			return nil
+		}
+		return result.Error
+	} else {
+		return usedEmail
+	}
+}

@@ -16,6 +16,57 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+func CreateStoreMan(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
+	content.RemoveAll()
+	AdminSidebar(user, app, window, content)
+	z := canvas.NewText("Зарегистрировать кладовщика:", color.Black)
+	z.TextSize = 32
+	z.Move(fyne.NewPos(300, 20))
+	content.Add(z)
+
+	nameEntry := widget.NewEntry()
+	nameEntry.SetPlaceHolder("Введите имя")
+
+	lastnameEntry := widget.NewEntry()
+	lastnameEntry.SetPlaceHolder("Введите фамилию")
+
+	loginEntry := widget.NewEntry()
+	loginEntry.SetPlaceHolder("Введите e-mail")
+
+	passwordEntry := widget.NewPasswordEntry()
+	passwordEntry.SetPlaceHolder("Придумайте пароль")
+
+	passwordEntry2 := widget.NewPasswordEntry()
+	passwordEntry2.SetPlaceHolder("Подтвердите пароль")
+
+	loginBtn := widget.NewButton("Зарегистрироваться", func() {
+		if passwordEntry.Text != passwordEntry2.Text {
+			dialog.NewError(errors.New("Введенные пароли не совпадают"), window).Show()
+		}
+		registerRequest := &models.RegisterRequest{
+			FirstName: nameEntry.Text,
+			LastName:  lastnameEntry.Text,
+			Email:     loginEntry.Text,
+			Password:  passwordEntry.Text,
+		}
+		err := rep.CreateStoreMan(registerRequest)
+		if err != nil {
+			dialog.NewError(err, window).Show()
+		} else {
+			dialog.NewInformation("Успех", "Вы успешно зарегистрировались! Воспользуйтесь меню входа для доступа к приложению.", window).Show()
+		}
+	})
+	loginBtn.Resize(fyne.NewSize(200, 50))
+
+	otstup := widget.NewLabel(" ")
+
+	loginform := container.NewVBox(nameEntry, lastnameEntry, loginEntry, passwordEntry, passwordEntry2, otstup, loginBtn)
+	loginform.Resize(fyne.NewSize(200, 200))
+	loginform.Move(fyne.NewPos(500, 450))
+
+	content.Add(loginform)
+}
+
 func DeleteProduct(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
 	content.RemoveAll()
 	AdminSidebar(user, app, window, content)
@@ -398,4 +449,9 @@ func AdminSidebar(user *models.User, app fyne.App, window fyne.Window, content *
 	deleteProductBtn.Resize(fyne.NewSize(200, 50))
 	deleteProductBtn.Move(fyne.NewPos(50, 420))
 	content.Add(deleteProductBtn)
+
+	createStoreBth := widget.NewButton("Новый кладовщик", func() { CreateStoreMan(user, app, window, content) })
+	createStoreBth.Resize(fyne.NewSize(200, 50))
+	createStoreBth.Move(fyne.NewPos(50, 520))
+	content.Add(createStoreBth)
 }
