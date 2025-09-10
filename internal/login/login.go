@@ -36,6 +36,9 @@ func RegisterFront(app fyne.App, window fyne.Window, content *fyne.Container) {
 	passwordEntry := widget.NewPasswordEntry()
 	passwordEntry.SetPlaceHolder("Придумайте пароль")
 
+	passwordEntry2 := widget.NewPasswordEntry()
+	passwordEntry2.SetPlaceHolder("Подтвердите пароль")
+
 	loginBtn := widget.NewButton("Зарегистрироваться", func() {
 		registerRequest := &models.RegisterRequest{
 			FirstName: nameEntry.Text,
@@ -51,11 +54,14 @@ func RegisterFront(app fyne.App, window fyne.Window, content *fyne.Container) {
 			Start(app, window, content)
 		}
 	})
-	loginBtn.Resize(fyne.NewSize(200, 50))
+	loginBtn.Resize(fyne.NewSize(100, 50))
+
+	cancelBtn := widget.NewButton("Отмена", func() { Start(app, window, content) })
+	cancelBtn.Resize(fyne.NewSize(100, 50))
 
 	otstup := widget.NewLabel(" ")
 
-	loginform := container.NewVBox(nameEntry, lastnameEntry, loginEntry, passwordEntry, otstup, loginBtn)
+	loginform := container.NewVBox(nameEntry, lastnameEntry, loginEntry, passwordEntry, passwordEntry2, loginBtn, otstup, cancelBtn)
 	loginform.Resize(fyne.NewSize(200, 200))
 	loginform.Move(fyne.NewPos(500, 450))
 
@@ -87,9 +93,12 @@ func LoginFront(app fyne.App, window fyne.Window, content *fyne.Container) {
 	})
 	loginBtn.Resize(fyne.NewSize(200, 50))
 
+	cancelBtn := widget.NewButton("Отмена", func() { Start(app, window, content) })
+	cancelBtn.Resize(fyne.NewSize(100, 50))
+
 	otstup := widget.NewLabel(" ")
 
-	loginform := container.NewVBox(loginEntry, passwordEntry, otstup, loginBtn)
+	loginform := container.NewVBox(loginEntry, passwordEntry, loginBtn, otstup, cancelBtn)
 	loginform.Resize(fyne.NewSize(200, 200))
 	loginform.Move(fyne.NewPos(500, 450))
 

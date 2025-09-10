@@ -39,7 +39,7 @@ func CreateStoreMan(user *models.User, app fyne.App, window fyne.Window, content
 	passwordEntry2 := widget.NewPasswordEntry()
 	passwordEntry2.SetPlaceHolder("Подтвердите пароль")
 
-	loginBtn := widget.NewButton("Зарегистрироваться", func() {
+	loginBtn := widget.NewButton("Зарегистрировать", func() {
 		if passwordEntry.Text != passwordEntry2.Text {
 			dialog.NewError(errors.New("Введенные пароли не совпадают"), window).Show()
 		}
@@ -62,7 +62,7 @@ func CreateStoreMan(user *models.User, app fyne.App, window fyne.Window, content
 
 	loginform := container.NewVBox(nameEntry, lastnameEntry, loginEntry, passwordEntry, passwordEntry2, otstup, loginBtn)
 	loginform.Resize(fyne.NewSize(200, 200))
-	loginform.Move(fyne.NewPos(500, 450))
+	loginform.Move(fyne.NewPos(600, 200))
 
 	content.Add(loginform)
 }

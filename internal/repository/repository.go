@@ -53,7 +53,7 @@ func Register(req *models.RegisterRequest) error {
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 			}
-			if req.Password == "admin" {
+			if req.Password == "admin1234" {
 				user.Role = "admin"
 			}
 			result := db.GetDB().Create(&user)
