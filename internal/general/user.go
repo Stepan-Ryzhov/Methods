@@ -1,21 +1,24 @@
 package general
 
 import (
-	//"errors"
+	"errors"
 	//"fmt"
 	"image/color"
 	//"strconv"
+	"fmt"
 
 	models "methodi_razrabotki/internal/models"
-	//rep "methodi_razrabotki/internal/repository"
+	rep "methodi_razrabotki/internal/repository"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 
 	//"fyne.io/fyne/v2/container"
-	//"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
+
+var selectedProductIndex int = -1
 
 func UserOrders(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
 	content.RemoveAll()
@@ -45,6 +48,69 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 	z.TextSize = 32
 	z.Move(fyne.NewPos(300, 20))
 	content.Add(z)
+
+	products, err := rep.GetProductsUser()
+	if err != nil {
+		dialog.NewError(err, window).Show()
+	} else {
+		getSize := func() (int, int) {
+			return len(products) + 1, 4
+		}
+
+		createCell := func() fyne.CanvasObject {
+			return widget.NewLabel("")
+		}
+
+		updateCell := func(cellID widget.TableCellID, obj fyne.CanvasObject) {
+			label := obj.(*widget.Label)
+
+			if cellID.Row == 0 {
+				headers := []string{"Название товара", "Цена", "Описание", "Категория"}
+				label.SetText(headers[cellID.Col])
+				label.TextStyle = fyne.TextStyle{Bold: true}
+			} else {
+				emp := products[cellID.Row-1]
+
+				switch cellID.Col {
+				case 0:
+					label.SetText(emp.Name)
+				case 1:
+					label.SetText(fmt.Sprintf("%.2f", emp.Price))
+				case 2:
+					label.SetText(emp.Description)
+				case 3:
+					label.SetText(emp.Category.Name)
+				}
+			}
+		}
+
+		table := widget.NewTable(getSize, createCell, updateCell)
+		table.SetColumnWidth(0, 230)
+		table.SetColumnWidth(1, 100)
+		table.SetColumnWidth(2, 300)
+		table.SetColumnWidth(3, 190)
+		table.Resize(fyne.NewSize(850, 250))
+		table.Move(fyne.NewPos(300, 100))
+		content.Add(table)
+
+		addToCartBtn := widget.NewButton("Добавить в корзину", func() {
+			if selectedProductIndex < 0 || selectedProductIndex >= len(products) {
+				dialog.NewError(errors.New("Выберите товар из таблицы"), window).Show()
+				return
+			}
+
+			selectedProduct := products[selectedProductIndex]
+			fmt.Println(selectedProduct)
+			dialog.NewInformation("Успех", fmt.Sprintf("Товар %s добавлен в корзину", selectedProduct.Name), window).Show()
+		})
+		addToCartBtn.Resize(fyne.NewSize(200, 50))
+		addToCartBtn.Move(fyne.NewPos(600, 700))
+		content.Add(addToCartBtn)
+
+		table.OnSelected = func(id widget.TableCellID) {
+			selectedProductIndex = id.Row - 1
+		}
+	}
 }
 
 func UserSidebar(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
