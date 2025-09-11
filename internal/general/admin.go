@@ -582,17 +582,17 @@ func AdminSidebar(user *models.User, app fyne.App, window fyne.Window, content *
 	deleteCatogoryBtn.Move(fyne.NewPos(50, 180))
 	content.Add(deleteCatogoryBtn)
 
-	newProductBtn := widget.NewButton("Новый продукт", func() { CreateProduct(user, app, window, content) })
+	newProductBtn := widget.NewButton("Новый товар", func() { CreateProduct(user, app, window, content) })
 	newProductBtn.Resize(fyne.NewSize(200, 50))
 	newProductBtn.Move(fyne.NewPos(50, 260))
 	content.Add(newProductBtn)
 
-	updateProductBtn := widget.NewButton("Изменить продукт", func() { UpdateProduct(user, app, window, content) })
+	updateProductBtn := widget.NewButton("Изменить товар", func() { UpdateProduct(user, app, window, content) })
 	updateProductBtn.Resize(fyne.NewSize(200, 50))
 	updateProductBtn.Move(fyne.NewPos(50, 340))
 	content.Add(updateProductBtn)
 
-	deleteProductBtn := widget.NewButton("Удалить продукт", func() { DeleteProduct(user, app, window, content) })
+	deleteProductBtn := widget.NewButton("Удалить товар", func() { DeleteProduct(user, app, window, content) })
 	deleteProductBtn.Resize(fyne.NewSize(200, 50))
 	deleteProductBtn.Move(fyne.NewPos(50, 420))
 	content.Add(deleteProductBtn)
