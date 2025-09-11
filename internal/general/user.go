@@ -103,7 +103,6 @@ func TableWidget(user *models.User, app fyne.App, window fyne.Window, content *f
 	table.SetColumnWidth(2, 300)
 	table.SetColumnWidth(3, 190)
 
-	// Автоматическая высота строк вместо фиксированной
 	for i := 0; i < len(filteredProducts); i++ {
 		table.SetRowHeight(i, widget.NewLabel(filteredProducts[i].Description).MinSize().Height+20)
 	}
@@ -138,7 +137,6 @@ func TableWidget(user *models.User, app fyne.App, window fyne.Window, content *f
 	content.Add(addToCartBtn)
 }
 
-// Вспомогательная функция для поиска индекса продукта в исходном массиве
 func findProductIndex(products []models.Product, productID uint) int {
 	for i, product := range products {
 		if product.ID == productID {

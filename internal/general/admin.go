@@ -123,7 +123,7 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 		content.Add(table)
 	}
 
-	noteLabel := widget.NewLabel("Обязательно введите ID товара и название категории, остальные поля заполните только если хотите изменить их")
+	noteLabel := widget.NewLabel("Обязательно введите ID товара, остальные поля заполните только если хотите изменить их")
 	noteLabel.TextStyle.Bold = true
 	noteLabel.Resize(fyne.NewSize(700, 20))
 	noteLabel.Move(fyne.NewPos(295, 60))
@@ -161,12 +161,20 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 			dialog.NewError(errors.New("Некорректный ID"), window).Show()
 			return
 		}
+		uval := uint(val)
 
-		category, err := rep.FindCategory(categoryNameEntry.Text)
-		if err != nil {
-			dialog.NewError(err, window).Show()
-			return
+		var categoryID uint
+		if categoryNameEntry.Text != "" {
+			category, err := rep.FindCategory(categoryNameEntry.Text)
+			if err != nil {
+				dialog.NewError(err, window).Show()
+				return
+			}
+			categoryID = category.ID
+		} else {
+			categoryID = uint(products[val-1].CategoryID)
 		}
+
 		var floatPrice float64
 		if priceEntry.Text != "" {
 			floatPrice, err = strconv.ParseFloat(priceEntry.Text, 64)
@@ -185,11 +193,11 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 		}
 
 		newProduct := &models.Product{
-			ID:          uint(val),
+			ID:          uval,
 			Name:        nameEntry.Text,
 			Description: descriptionEntry.Text,
 			Price:       floatPrice,
-			CategoryID:  category.ID,
+			CategoryID:  categoryID,
 			Stock:       intStock,
 		}
 
