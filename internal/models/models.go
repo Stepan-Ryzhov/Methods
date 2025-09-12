@@ -91,7 +91,7 @@ type Image struct {
 }
 
 type CartResponse struct {
-	ID        uint
+	ID        uint `gorm:"primary_key"`
 	UserID    uint
 	Total     float64
 	CreatedAt time.Time
@@ -100,7 +100,7 @@ type CartResponse struct {
 }
 
 type CartItem struct {
-	ID        uint
+	ID        uint `gorm:"primary_key"`
 	CartID    uint
 	ProductID uint
 	Quantity  int

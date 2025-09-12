@@ -61,7 +61,16 @@ func Register(req *models.RegisterRequest) error {
 				log.Printf("Ошибка создания пользователя в БД: %v", result.Error)
 				return result.Error
 			}
-
+			if user.Role == "user" {
+				cart := &models.Cart{
+					UserID:    user.ID,
+					Total:     0.0,
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+					Items:     nil,
+				}
+				CreateCart(cart)
+			}
 			return nil
 		}
 		return result.Error
