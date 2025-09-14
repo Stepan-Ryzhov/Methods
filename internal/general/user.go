@@ -103,28 +103,16 @@ func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Con
 		table.Move(fyne.NewPos(300, 150))
 		content.Add(table)
 
-		clearCartBtn := widget.NewButton("Очистить корзину", func() {
-			err := rep.ClearCart(cart_id)
-			if err != nil {
-				dialog.NewError(err, window).Show()
-			} else {
-				dialog.ShowInformation("Успех", "Корзина очищена", window)
-				Cart(user, app, window, content)
-			}
-		})
-		clearCartBtn.Resize(fyne.NewSize(200, 50))
-		clearCartBtn.Move(fyne.NewPos(300, 650))
-		content.Add(clearCartBtn)
+		orderBtn := widget.NewButton("Оформить заказ", func() {
 
-		// sumLabel := widget.NewLabel(fmt.Sprintf("Итого: %.2f", total))
-		// sumLabel.Resize(fyne.NewSize(200, 50))
-		// sumLabel.Move(fyne.NewPos(600, 650))
-		// sumLabel.TextStyle.Bold = true
-		// content.Add(sumLabel)
+		})
+		orderBtn.Resize(fyne.NewSize(200, 50))
+		orderBtn.Move(fyne.NewPos(900, 700))
+		content.Add(orderBtn)
 
 		z1 := canvas.NewText(fmt.Sprintf("Итого: %.2f", total), color.Black)
 		z1.TextSize = 28
-		z1.Move(fyne.NewPos(800, 650))
+		z1.Move(fyne.NewPos(300, 700))
 		content.Add(z1)
 
 		uprLabel := widget.NewLabel("Выберите товар из корзины для\nуправления его количеством")

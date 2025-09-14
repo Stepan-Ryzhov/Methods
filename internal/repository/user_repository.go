@@ -71,14 +71,6 @@ func GetCartByID(id uint) (*models.Cart, error) {
 	return &cart, nil
 }
 
-func ClearCart(cart_id uint) error {
-	result := db.GetDB().Where("cart_id = ?", cart_id).Delete(&models.CartItem{})
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
-}
-
 func IncrementItem(cartID uint, productID uint) error {
 	var item models.CartItem
 	result := db.GetDB().Where("cart_id = ? AND product_id = ?", cartID, productID).First(&item)

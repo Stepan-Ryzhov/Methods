@@ -93,9 +93,10 @@ type CartResponseItem struct {
 }
 
 type Order struct {
-	ID        uint        `gorm:"primaryKey" json:"id"`
-	UserID    uint        `json:"user_id"`
-	Total     float64     `json:"total"`
+	ID        uint    `gorm:"primaryKey" json:"id"`
+	UserID    uint    `json:"user_id"`
+	Total     float64 `json:"total"`
+	Status    string
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
 	Items     []OrderItem `gorm:"foreignKey:CartID" json:"items"`
@@ -110,12 +111,4 @@ type OrderItem struct {
 	Total     float64
 	CreatedAt time.Time
 	UpdatedAt time.Time
-}
-
-type OrderList struct {
-	ID        uint
-	Total     float64
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Orders    []Order `gorm:"foreignKey:OrderID" json:"orders"`
 }

@@ -27,7 +27,6 @@ func Init() error {
 		&models.User{},
 		&models.Order{},
 		&models.OrderItem{},
-		&models.OrderList{},
 	); err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
