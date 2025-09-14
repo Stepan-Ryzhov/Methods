@@ -29,29 +29,12 @@ type LoginRequest struct {
 	Password string `json:"Password" binding:"required"`
 }
 
-type UpdateProfileRequest struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
-}
-
-type ForgotPasswordRequest struct {
-	Email     string `json:"email" binding:"required,email"`
-	FirstName string `json:"firstName" binding:"required"`
-	LastName  string `json:"lastName" binding:"required"`
-}
-
-type ResetPasswordRequest struct {
-	ResetToken  string `json:"resetToken" binding:"required"`
-	NewPassword string `json:"newPassword" binding:"required,min=6"`
-}
-
 type Cart struct {
-	ID        uint       `gorm:"primaryKey" json:"id"`
-	UserID    uint       `json:"user_id"`
-	Total     float64    `json:"total"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+	ID        uint `gorm:"primaryKey" json:"id"`
+	UserID    uint
+	Total     float64
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	Items     []CartItem `gorm:"foreignKey:CartID" json:"items"`
 }
 
@@ -90,15 +73,6 @@ type Image struct {
 	Product Product
 }
 
-type CartResponse struct {
-	ID        uint `gorm:"primary_key"`
-	UserID    uint
-	Total     float64
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Items     []CartResponseItem
-}
-
 type CartItem struct {
 	ID        uint `gorm:"primary_key"`
 	CartID    uint
@@ -116,4 +90,32 @@ type CartResponseItem struct {
 	Price     float64
 	Quantity  int
 	Total     float64
+}
+
+type Order struct {
+	ID        uint        `gorm:"primaryKey" json:"id"`
+	UserID    uint        `json:"user_id"`
+	Total     float64     `json:"total"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+	Items     []OrderItem `gorm:"foreignKey:CartID" json:"items"`
+}
+
+type OrderItem struct {
+	ID        uint `gorm:"primary_key"`
+	CartID    uint
+	ProductID uint
+	Quantity  int
+	Price     float64
+	Total     float64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type OrderList struct {
+	ID        uint
+	Total     float64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Orders    []Order `gorm:"foreignKey:OrderID" json:"orders"`
 }

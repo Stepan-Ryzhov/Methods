@@ -78,3 +78,44 @@ func ClearCart(cart_id uint) error {
 	}
 	return nil
 }
+
+func IncrementItem(cartID uint, productID uint) error {
+	var item models.CartItem
+	result := db.GetDB().Where("cart_id = ? AND product_id = ?", cartID, productID).First(&item)
+	if result.Error != nil {
+		return result.Error
+	}
+	item.Quantity += 1
+	item.Total = item.Price * float64(item.Quantity)
+	result = db.GetDB().Save(&item)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func DecrementItem(cartID uint, productID uint) error {
+	var item models.CartItem
+	result := db.GetDB().Where("cart_id = ? AND product_id = ?", cartID, productID).First(&item)
+	if result.Error != nil {
+		return result.Error
+	}
+	if item.Quantity <= 1 {
+		return RemoveFromCart(cartID, productID)
+	}
+	item.Quantity -= 1
+	item.Total = item.Price * float64(item.Quantity)
+	result = db.GetDB().Save(&item)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func RemoveFromCart(cartID uint, productID uint) error {
+	result := db.GetDB().Where("cart_id = ? AND product_id = ?", cartID, productID).Delete(&models.CartItem{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

@@ -99,7 +99,7 @@ func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Con
 		table.SetColumnWidth(2, 100)
 		table.SetColumnWidth(3, 100)
 
-		table.Resize(fyne.NewSize(850, 400))
+		table.Resize(fyne.NewSize(550, 400))
 		table.Move(fyne.NewPos(300, 150))
 		content.Add(table)
 
@@ -116,11 +116,77 @@ func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Con
 		clearCartBtn.Move(fyne.NewPos(300, 650))
 		content.Add(clearCartBtn)
 
-		sumLabel := widget.NewLabel(fmt.Sprintf("Итого: %.2f", total))
-		sumLabel.Resize(fyne.NewSize(200, 50))
-		sumLabel.Move(fyne.NewPos(600, 650))
-		sumLabel.TextStyle.Bold = true
-		content.Add(sumLabel)
+		// sumLabel := widget.NewLabel(fmt.Sprintf("Итого: %.2f", total))
+		// sumLabel.Resize(fyne.NewSize(200, 50))
+		// sumLabel.Move(fyne.NewPos(600, 650))
+		// sumLabel.TextStyle.Bold = true
+		// content.Add(sumLabel)
+
+		z1 := canvas.NewText(fmt.Sprintf("Итого: %.2f", total), color.Black)
+		z1.TextSize = 28
+		z1.Move(fyne.NewPos(800, 650))
+		content.Add(z1)
+
+		uprLabel := widget.NewLabel("Выберите товар из корзины для\nуправления его количеством")
+		uprLabel.Resize(fyne.NewSize(200, 50))
+		uprLabel.Move(fyne.NewPos(900, 100))
+		content.Add(uprLabel)
+
+		table.OnSelected = func(id widget.TableCellID) {
+			selectedProductIndex = id.Row
+
+			plusOneBtn := widget.NewButton("+1", func() {
+				if selectedProductIndex >= 0 && selectedProductIndex < len(cart.Items) {
+					item := cart.Items[selectedProductIndex]
+					err := rep.IncrementItem(cart_id, item.ProductID)
+					if err != nil {
+						dialog.NewError(err, window).Show()
+					} else {
+						dialog.ShowInformation("Успех", "Количество увеличено", window)
+						Cart(user, app, window, content)
+					}
+				}
+			})
+
+			minusOneBtn := widget.NewButton("-1", func() {
+				if selectedProductIndex >= 0 && selectedProductIndex < len(cart.Items) {
+					item := cart.Items[selectedProductIndex]
+					err := rep.DecrementItem(cart_id, item.ProductID)
+					if err != nil {
+						dialog.NewError(err, window).Show()
+					} else {
+						dialog.ShowInformation("Успех", "Количество уменьшено", window)
+						Cart(user, app, window, content)
+					}
+				}
+			})
+
+			removeBtn := widget.NewButton("Удалить товар", func() {
+				if selectedProductIndex >= 0 && selectedProductIndex < len(cart.Items) {
+					item := cart.Items[selectedProductIndex]
+					err := rep.RemoveFromCart(cart_id, item.ProductID)
+					if err != nil {
+						dialog.NewError(err, window).Show()
+					} else {
+						dialog.ShowInformation("Успех", "Товар удален", window)
+						Cart(user, app, window, content)
+					}
+				}
+			})
+
+			plusOneBtn.Resize(fyne.NewSize(200, 50))
+			plusOneBtn.Move(fyne.NewPos(900, 200))
+			content.Add(plusOneBtn)
+
+			minusOneBtn.Resize(fyne.NewSize(200, 50))
+			minusOneBtn.Move(fyne.NewPos(900, 300))
+			content.Add(minusOneBtn)
+
+			removeBtn.Resize(fyne.NewSize(200, 50))
+			removeBtn.Move(fyne.NewPos(900, 400))
+			content.Add(removeBtn)
+
+		}
 	}
 }
 
@@ -199,7 +265,7 @@ func TableWidget(user *models.User, app fyne.App, window fyne.Window, content *f
 			selectedProductIndex = findProductIndex(products, filteredProducts[id.Row].ID)
 			quantityEntry := widget.NewEntry()
 			quantityEntry.PlaceHolder = "Укажите количество"
-			quantityEntry.Resize(fyne.NewSize(200, 30))
+			quantityEntry.Resize(fyne.NewSize(200, 40))
 			quantityEntry.Move(fyne.NewPos(600, 650))
 			content.Add(quantityEntry)
 
@@ -336,7 +402,7 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 			selectedProductIndex = id.Row
 			quantityEntry := widget.NewEntry()
 			quantityEntry.PlaceHolder = "Укажите количество"
-			quantityEntry.Resize(fyne.NewSize(200, 30))
+			quantityEntry.Resize(fyne.NewSize(200, 40))
 			quantityEntry.Move(fyne.NewPos(600, 650))
 			content.Add(quantityEntry)
 
