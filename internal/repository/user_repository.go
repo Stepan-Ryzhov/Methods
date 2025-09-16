@@ -111,3 +111,21 @@ func RemoveFromCart(cartID uint, productID uint) error {
 	}
 	return nil
 }
+
+func CreateOrder(order *models.Order) error {
+	if err := db.GetDB().Create(order).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetOrdersByUserID(userID uint) ([]models.Order, error) {
+	var orders []models.Order
+	result := db.GetDB().Where("user_id = ?", userID).Preload("Items").Find(&orders)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return orders, nil
+}

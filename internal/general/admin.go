@@ -93,7 +93,6 @@ func UpdateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 			if cellID.Row == 0 {
 				headers := []string{"ID", "Название товара", "Цена", "Кол-во", "Категория"}
 				label.SetText(headers[cellID.Col])
-				label.TextStyle = fyne.TextStyle{Bold: true}
 			} else {
 				emp := products[cellID.Row-1]
 
@@ -245,7 +244,6 @@ func DeleteProduct(user *models.User, app fyne.App, window fyne.Window, content 
 			if cellID.Row == 0 {
 				headers := []string{"ID", "Название товара", "Цена", "Кол-во", "Категория"}
 				label.SetText(headers[cellID.Col])
-				label.TextStyle = fyne.TextStyle{Bold: true}
 			} else {
 				emp := products[cellID.Row-1]
 
@@ -330,7 +328,6 @@ func CreateProduct(user *models.User, app fyne.App, window fyne.Window, content 
 			if cellID.Row == 0 {
 				headers := []string{"ID", "Название товара", "Цена", "Кол-во", "Категория"}
 				label.SetText(headers[cellID.Col])
-				label.TextStyle = fyne.TextStyle{Bold: true}
 			} else {
 				emp := products[cellID.Row-1]
 

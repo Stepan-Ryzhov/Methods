@@ -2,11 +2,9 @@ package general
 
 import (
 	"errors"
+	"fmt"
 	"image/color"
 	"strconv"
-
-	// "strconv"
-	"fmt"
 
 	models "methodi_razrabotki/internal/models"
 	rep "methodi_razrabotki/internal/repository"
@@ -14,7 +12,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 
-	// "fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
@@ -29,6 +26,55 @@ func UserOrders(user *models.User, app fyne.App, window fyne.Window, content *fy
 	z.TextSize = 32
 	z.Move(fyne.NewPos(300, 20))
 	content.Add(z)
+
+	orders, err := rep.GetOrdersByUserID(user.ID)
+	if err != nil {
+		dialog.NewError(err, window).Show()
+		return
+	}
+
+	if len(orders) == 0 {
+		z := canvas.NewText("Заказов нет", color.Black)
+		z.TextSize = 26
+		z.Move(fyne.NewPos(600, 200))
+		content.Add(z)
+		return
+	}
+
+	headerLabel := widget.NewLabel("Номер заказа\t\t\t   Сумма\t\tСтатус")
+	headerLabel.Resize(fyne.NewSize(850, 50))
+	headerLabel.Move(fyne.NewPos(300, 100))
+	content.Add(headerLabel)
+
+	getSize := func() (int, int) {
+		return len(orders), 3
+	}
+
+	createCell := func() fyne.CanvasObject {
+		return widget.NewLabel("")
+	}
+
+	updateCell := func(cellID widget.TableCellID, obj fyne.CanvasObject) {
+		label := obj.(*widget.Label)
+		order := orders[cellID.Row]
+
+		switch cellID.Col {
+		case 0:
+			label.SetText(fmt.Sprintf("%d", order.ID))
+		case 1:
+			label.SetText(fmt.Sprintf("%.2f", order.Total))
+		case 2:
+			label.SetText(order.Status)
+		}
+	}
+
+	table := widget.NewTable(getSize, createCell, updateCell)
+	table.SetColumnWidth(0, 200)
+	table.SetColumnWidth(1, 150)
+	table.SetColumnWidth(2, 150)
+	table.Resize(fyne.NewSize(500, 400))
+	table.Move(fyne.NewPos(300, 150))
+	content.Add(table)
 }
 
 func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
@@ -104,7 +150,31 @@ func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Con
 		content.Add(table)
 
 		orderBtn := widget.NewButton("Оформить заказ", func() {
+			// Создание нового среза OrderItem
+			orderItems := make([]models.OrderItem, len(cart.Items))
+			for i, item := range cart.Items {
+				orderItems[i] = models.OrderItem{
+					ProductID: item.ProductID,
+					Quantity:  item.Quantity,
+					Price:     item.Price,
+					Total:     item.Total,
+				}
+			}
 
+			// Создание заказа
+			order := models.Order{
+				UserID: user.ID,
+				Total:  total,
+				Status: "Оформлен",
+				Items:  orderItems, // ✅ Корректное присвоение
+			}
+
+			if err := rep.CreateOrder(&order); err != nil {
+				dialog.NewError(err, window).Show()
+			} else {
+				dialog.NewInformation("Успех", "Заказ оформлен", window).Show()
+				cart.Items = nil
+			}
 		})
 		orderBtn.Resize(fyne.NewSize(200, 50))
 		orderBtn.Move(fyne.NewPos(900, 700))
@@ -369,10 +439,10 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 		table.SetColumnWidth(1, 100)
 		table.SetColumnWidth(2, 300)
 		table.SetColumnWidth(3, 190)
-		table.SetRowHeight(0, 250)
-		table.SetRowHeight(1, 250)
-		table.SetRowHeight(2, 250)
-		table.SetRowHeight(3, 250)
+
+		for i := 0; i < len(products); i++ {
+			table.SetRowHeight(i, widget.NewLabel(products[i].Description).MinSize().Height+20)
+		}
 		table.Resize(fyne.NewSize(850, 400))
 		table.Move(fyne.NewPos(300, 150))
 		content.Add(table)
