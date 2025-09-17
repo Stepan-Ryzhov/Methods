@@ -119,26 +119,44 @@ func UserOrders(user *models.User, app fyne.App, window fyne.Window, content *fy
 		cancelBtn.Resize(fyne.NewSize(200, 40))
 		cancelBtn.Move(fyne.NewPos(900, float32(yPos-40)))
 		content.Add(cancelBtn)
-		if order.Status == "Оформлен" {
+		if order.Status == "Оформлен" || order.Status == "Сформирован" {
 			payBtn := widget.NewButton("Оплатить", func() {
 				if order.ID == 0 {
 					dialog.NewError(errors.New("Некорректный идентификатор заказа"), window).Show()
 					return
 				} else {
-					if order.Status == "Оформлен" {
-						if err := rep.UpdateOrderStatus(order.ID, "Оплачен"); err != nil {
-							dialog.NewError(err, window).Show()
-						} else {
-							dialog.NewInformation("Успех", "Заказ оплачен", window).Show()
-							UserOrders(user, app, window, content)
-						}
+					if err := rep.UpdateOrderStatus(order.ID, "Оплачен"); err != nil {
+						dialog.NewError(err, window).Show()
+					} else {
+						dialog.NewInformation("Успех", "Заказ оплачен", window).Show()
+						UserOrders(user, app, window, content)
 					}
+
 				}
 			})
 
 			payBtn.Resize(fyne.NewSize(200, 40))
 			payBtn.Move(fyne.NewPos(900, float32(yPos-90)))
 			content.Add(payBtn)
+		}
+		if order.Status == "Отправлен" {
+			takeBtn := widget.NewButton("Получить заказ", func() {
+				if order.ID == 0 {
+					dialog.NewError(errors.New("Некорректный идентификатор заказа"), window).Show()
+					return
+				}
+
+				if err := rep.DeleteOrder(order.ID, user.ID); err != nil {
+					dialog.NewError(err, window).Show()
+					return
+				}
+
+				dialog.NewInformation("Успех", "Заказ получен", window).Show()
+				UserOrders(user, app, window, content)
+			})
+			takeBtn.Resize(fyne.NewSize(200, 40))
+			takeBtn.Move(fyne.NewPos(900, float32(yPos-40)))
+			content.Add(takeBtn)
 		}
 	}
 }
