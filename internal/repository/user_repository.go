@@ -129,3 +129,23 @@ func GetOrdersByUserID(userID uint) ([]models.Order, error) {
 
 	return orders, nil
 }
+
+func DeleteOrder(orderID uint, userID uint) error {
+	result := db.GetDB().Where("id = ? AND user_id = ?", orderID, userID).Delete(&models.Order{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func UpdateOrderStatus(orderID uint, status string) error {
+	if status == "" {
+		return errors.New("Статус не может быть пустым")
+	} else {
+		result := db.GetDB().Model(&models.Order{}).Where("id = ?", orderID).Update("status", status)
+		if result.Error != nil {
+			return result.Error
+		}
+		return nil
+	}
+}

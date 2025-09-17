@@ -12,6 +12,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 
+	db "methodi_razrabotki/internal/database"
+
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
@@ -41,40 +43,104 @@ func UserOrders(user *models.User, app fyne.App, window fyne.Window, content *fy
 		return
 	}
 
-	headerLabel := widget.NewLabel("Номер заказа\t\t\t   Сумма\t\tСтатус")
-	headerLabel.Resize(fyne.NewSize(850, 50))
-	headerLabel.Move(fyne.NewPos(300, 100))
-	content.Add(headerLabel)
+	yPos := 100
 
-	getSize := func() (int, int) {
-		return len(orders), 3
-	}
+	for _, order := range orders {
+		orderHeader := widget.NewLabel(fmt.Sprintf("Заказ №%d | Сумма: %.2f | Статус: %s", order.ID, order.Total, order.Status))
+		orderHeader.TextStyle.Bold = true
+		orderHeader.Resize(fyne.NewSize(800, 40))
+		orderHeader.Move(fyne.NewPos(300, float32(yPos)))
+		content.Add(orderHeader)
+		yPos += 40
 
-	createCell := func() fyne.CanvasObject {
-		return widget.NewLabel("")
-	}
+		if len(order.Items) > 0 {
+			headerLabel := widget.NewLabel("Название товара\t\tКоличество\tЦена")
+			headerLabel.Resize(fyne.NewSize(800, 30))
+			headerLabel.Move(fyne.NewPos(300, float32(yPos)))
+			content.Add(headerLabel)
+			yPos += 30
 
-	updateCell := func(cellID widget.TableCellID, obj fyne.CanvasObject) {
-		label := obj.(*widget.Label)
-		order := orders[cellID.Row]
+			getSize := func() (int, int) {
+				return len(order.Items), 3
+			}
 
-		switch cellID.Col {
-		case 0:
-			label.SetText(fmt.Sprintf("%d", order.ID))
-		case 1:
-			label.SetText(fmt.Sprintf("%.2f", order.Total))
-		case 2:
-			label.SetText(order.Status)
+			createCell := func() fyne.CanvasObject {
+				return widget.NewLabel("")
+			}
+
+			updateCell := func(cellID widget.TableCellID, obj fyne.CanvasObject) {
+				label := obj.(*widget.Label)
+				item := order.Items[cellID.Row]
+
+				switch cellID.Col {
+				case 0:
+					product, err := rep.GetProductByID(item.ProductID)
+					if err != nil {
+						dialog.NewError(err, window).Show()
+					}
+					label.SetText(product.Name)
+				case 1:
+					label.SetText(fmt.Sprintf("%d", item.Quantity))
+				case 2:
+					label.SetText(fmt.Sprintf("%.2f", item.Price))
+				}
+			}
+
+			table := widget.NewTable(getSize, createCell, updateCell)
+			table.SetColumnWidth(0, 300)
+			table.SetColumnWidth(1, 100)
+			table.SetColumnWidth(2, 100)
+			table.Resize(fyne.NewSize(550, float32(len(order.Items))*50))
+			table.Move(fyne.NewPos(300, float32(yPos)))
+			content.Add(table)
+			yPos += int(table.Size().Height) + 20
+		} else {
+			noItemsLabel := widget.NewLabel("Товаров в этом заказе не найдено")
+			noItemsLabel.Resize(fyne.NewSize(500, 30))
+			noItemsLabel.Move(fyne.NewPos(300, float32(yPos)))
+			content.Add(noItemsLabel)
+			yPos += 30
+		}
+		cancelBtn := widget.NewButton("Отменить заказ", func() {
+			if order.ID == 0 {
+				dialog.NewError(errors.New("Некорректный идентификатор заказа"), window).Show()
+				return
+			}
+
+			if err := rep.DeleteOrder(order.ID, user.ID); err != nil {
+				dialog.NewError(err, window).Show()
+				return
+			}
+
+			dialog.NewInformation("Успех", "Заказ отменён", window).Show()
+			UserOrders(user, app, window, content)
+		})
+
+		cancelBtn.Resize(fyne.NewSize(200, 40))
+		cancelBtn.Move(fyne.NewPos(900, float32(yPos-40)))
+		content.Add(cancelBtn)
+		if order.Status == "Оформлен" {
+			payBtn := widget.NewButton("Оплатить", func() {
+				if order.ID == 0 {
+					dialog.NewError(errors.New("Некорректный идентификатор заказа"), window).Show()
+					return
+				} else {
+					if order.Status == "Оформлен" {
+						if err := rep.UpdateOrderStatus(order.ID, "Оплачен"); err != nil {
+							dialog.NewError(err, window).Show()
+						} else {
+							dialog.NewInformation("Успех", "Заказ оплачен", window).Show()
+							UserOrders(user, app, window, content)
+						}
+					}
+				}
+			})
+
+			payBtn.Resize(fyne.NewSize(200, 40))
+			payBtn.Move(fyne.NewPos(900, float32(yPos-90)))
+			content.Add(payBtn)
 		}
 	}
-
-	table := widget.NewTable(getSize, createCell, updateCell)
-	table.SetColumnWidth(0, 200)
-	table.SetColumnWidth(1, 150)
-	table.SetColumnWidth(2, 150)
-	table.Resize(fyne.NewSize(500, 400))
-	table.Move(fyne.NewPos(300, 150))
-	content.Add(table)
 }
 
 func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Container) {
@@ -150,7 +216,6 @@ func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Con
 		content.Add(table)
 
 		orderBtn := widget.NewButton("Оформить заказ", func() {
-			// Создание нового среза OrderItem
 			orderItems := make([]models.OrderItem, len(cart.Items))
 			for i, item := range cart.Items {
 				orderItems[i] = models.OrderItem{
@@ -161,19 +226,29 @@ func Cart(user *models.User, app fyne.App, window fyne.Window, content *fyne.Con
 				}
 			}
 
-			// Создание заказа
 			order := models.Order{
 				UserID: user.ID,
 				Total:  total,
 				Status: "Оформлен",
-				Items:  orderItems, // ✅ Корректное присвоение
+				Items:  orderItems,
 			}
 
 			if err := rep.CreateOrder(&order); err != nil {
 				dialog.NewError(err, window).Show()
 			} else {
 				dialog.NewInformation("Успех", "Заказ оформлен", window).Show()
-				cart.Items = nil
+				for _, item := range cart.Items {
+					if err := rep.RemoveFromCart(cart_id, item.ProductID); err != nil {
+						dialog.NewError(err, window).Show()
+					}
+				}
+
+				if err := db.GetDB().Save(&cart).Error; err != nil {
+					dialog.NewError(errors.New("Ошибка очистки корзины"), window).Show()
+					return
+				}
+
+				Cart(user, app, window, content)
 			}
 		})
 		orderBtn.Resize(fyne.NewSize(200, 50))
@@ -364,7 +439,7 @@ func TableWidget(user *models.User, app fyne.App, window fyne.Window, content *f
 
 	productSelect.PlaceHolder = selected
 	productSelect.Resize(fyne.NewSize(200, 50))
-	productSelect.Move(fyne.NewPos(950, 600))
+	productSelect.Move(fyne.NewPos(950, 550))
 	content.Add(productSelect)
 }
 
@@ -453,7 +528,7 @@ func Catalog(user *models.User, app fyne.App, window fyne.Window, content *fyne.
 		})
 		productSelect.PlaceHolder = "Все категории"
 		productSelect.Resize(fyne.NewSize(200, 50))
-		productSelect.Move(fyne.NewPos(950, 600))
+		productSelect.Move(fyne.NewPos(950, 550))
 		content.Add(productSelect)
 
 		table.OnSelected = func(id widget.TableCellID) {

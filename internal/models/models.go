@@ -99,12 +99,12 @@ type Order struct {
 	Status    string
 	CreatedAt time.Time   `json:"created_at"`
 	UpdatedAt time.Time   `json:"updated_at"`
-	Items     []OrderItem `gorm:"foreignKey:CartID" json:"items"`
+	Items     []OrderItem `gorm:"foreignKey:OrderID" json:"items"`
 }
 
 type OrderItem struct {
 	ID        uint `gorm:"primary_key"`
-	CartID    uint
+	OrderID   uint
 	ProductID uint
 	Quantity  int
 	Price     float64
